@@ -29,9 +29,9 @@ export default [
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
-      
+
       // TypeScript specific rules
-      '@typescript-eslint/no-unused-vars': ['error', { 
+      '@typescript-eslint/no-unused-vars': ['error', {
         argsIgnorePattern: '^_',
         varsIgnorePattern: '^_',
       }],
@@ -40,7 +40,7 @@ export default [
       '@typescript-eslint/consistent-type-imports': ['warn', { prefer: 'type-imports' }],
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
-      
+
       // Code quality rules
       'no-console': 'warn',
       'no-debugger': 'error',
@@ -52,7 +52,7 @@ export default [
       'eqeqeq': ['error', 'always'],
       'curly': ['error', 'all'],
       'no-throw-literal': 'error',
-      
+
       // Best practices
       'no-return-await': 'error',
       'require-await': 'warn',
@@ -62,7 +62,7 @@ export default [
     },
   },
   {
-    ignores: ['dist/', 'node_modules/', '*.js', '*.mjs', 'eslint.config.mjs'],
+    ignores: ['dist/', 'node_modules/', '*.js', '*.mjs', 'eslint.config.mjs', 'prisma.config.ts'],
   },
 ];
 

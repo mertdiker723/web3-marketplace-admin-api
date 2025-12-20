@@ -1,0 +1,127 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model provinces {
+  id            Int             @id @default(autoincrement())
+  name          String          @db.VarChar(50)
+  districts     districts[]
+  neighborhoods neighborhoods[]
+  users         users[]
+}
+
+model brands {
+  id       String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name     String     @db.VarChar
+  products products[]
+}
+
+model categories {
+  id       String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name     String     @db.VarChar(100)
+  products products[]
+}
+
+model districts {
+  id            Int             @id @default(autoincrement())
+  name          String          @db.VarChar(75)
+  provinceId    Int
+  provinces     provinces       @relation(fields: [provinceId], references: [id], onUpdate: NoAction, map: "province_district_id_fkey")
+  neighborhoods neighborhoods[]
+  users         users[]
+}
+
+model neighborhoods {
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(150)
+  districtId Int
+  provinceId Int
+  districts  districts @relation(fields: [districtId], references: [id], onUpdate: NoAction, map: "neighborhood_district_id_fkey")
+  provinces  provinces @relation(fields: [provinceId], references: [id], onUpdate: NoAction, map: "neighborhood_province_id_fkey")
+  users      users[]
+}
+
+model users {
+  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName      String        @db.VarChar(70)
+  lastName       String        @db.VarChar(100)
+  email          String        @db.VarChar(70)
+  phone          String        @db.VarChar(25)
+  openAddress    String?
+  provinceId     Int
+  districtId     Int
+  neighborhoodId Int
+  createdAt      DateTime?     @default(now()) @db.Timetz(6)
+  updatedAt      DateTime?     @default(now()) @db.Timetz(6)
+  userType       Int           @default(1)
+  orders         orders[]
+  products       products[]
+  userWallets    userWallets[]
+  districts      districts     @relation(fields: [districtId], references: [id], onUpdate: NoAction, map: "user_district_id_fkey")
+  neighborhoods  neighborhoods @relation(fields: [neighborhoodId], references: [id], onUpdate: NoAction, map: "user_neighborhood_id_fkey")
+  provinces      provinces     @relation(fields: [provinceId], references: [id], onUpdate: NoAction, map: "user_province_id_fkey")
+  userTypes      userTypes     @relation(fields: [userType], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_user-type_id_fkey")
+}
+
+model products {
+  id             String     @id @db.Uuid
+  name           String     @db.VarChar(200)
+  description    String?
+  categoryId     String     @db.Uuid
+  brandId        String     @db.Uuid
+  priceWei       String     @db.VarChar(500)
+  currencySymbol String     @db.VarChar(50)
+  chainId        Int
+  tokenAddress   String?
+  stock          Int        @default(0)
+  isActive       Boolean
+  createdAt      DateTime   @db.Timetz(6)
+  updatedAt      DateTime   @db.Timetz(6)
+  userId         String     @db.Uuid
+  orders         orders[]
+  brands         brands     @relation(fields: [brandId], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "product_brand_id_fkey")
+  categories     categories @relation(fields: [categoryId], references: [id], onDelete: SetNull, onUpdate: NoAction, map: "product_category_id_fkey")
+  users          users      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "product_user_id_fkey")
+}
+
+model orders {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  quantity      Int
+  unitPriceWei  String
+  totalWei      String
+  status        Int
+  createdAt     DateTime    @db.Timetz(6)
+  updatedAt     DateTime    @db.Timetz(6)
+  userId        String      @db.Uuid
+  userWalletsId String      @db.Uuid
+  productId     String      @db.Uuid
+  products      products    @relation(fields: [productId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "order_product_id_fkey")
+  users         users       @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "order_user_id_fkey")
+  userWallets   userWallets @relation(fields: [userWalletsId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "order_wallet-address_id_fkey")
+}
+
+model status {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(20)
+}
+
+model userWallets {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @db.Uuid
+  createdAt     DateTime @db.Timetz(6)
+  updatedAt     DateTime @db.Timetz(6)
+  walletAddress String
+  isPrimary     Boolean
+  orders        orders[]
+  users         users    @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "walletAddress_user_id_fkey")
+}
+
+model userTypes {
+  id    Int     @id @default(autoincrement())
+  name  String  @db.VarChar(10)
+  users users[]
+}
