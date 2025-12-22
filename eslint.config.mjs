@@ -42,7 +42,7 @@ export default [
       '@typescript-eslint/await-thenable': 'error',
 
       // Code quality rules
-      'no-console': 'warn',
+      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
       'no-debugger': 'error',
       'no-duplicate-imports': 'error',
       'no-unused-expressions': 'error',

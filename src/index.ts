@@ -7,23 +7,36 @@ import helmet from 'helmet';
 dotenv.config();
 
 // Routers
-import provinceRouter from './routers/provinceRouter';
+import router from './routers';
 
-const app = express();
+const corsURL = 'http://localhost:5000'; // --> will be handled
 
-// Middlewares
-app.use(helmet());
-app.use(cors());
-app.use(morgan('dev'));
-app.use(express.json());
+(() => {
+  try {
+    const app = express();
 
-// Routes
-app.use('/api/provinces', provinceRouter);
+    // Middlewares
+    app.use(express.json());
+    app.use(helmet());
+    app.use(
+      cors({
+        origin: [corsURL],
+        credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authentication'],
+      })
+    );
+    app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
-// Start server
-const port = Number(process.env.PORT ?? 3000);
+    // Routes
+    app.use('/api', router);
 
-app.listen(port, () => {
-  // eslint-disable-next-line no-console
-  console.log(`🚀 Server running on http://localhost:${port}`);
-});
+    const port = Number(process.env.PORT ?? 3000);
+
+    app.listen(port, () => {
+      console.info(`🚀 Server running on ${port}`);
+    });
+  } catch (error) {
+    console.error('❌ Server startup failed:', error);
+  }
+})();

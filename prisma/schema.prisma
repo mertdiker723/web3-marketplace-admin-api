@@ -112,8 +112,8 @@ model status {
 model userWallets {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId        String   @db.Uuid
-  createdAt     DateTime @db.Timetz(6)
-  updatedAt     DateTime @db.Timetz(6)
+  createdAt     DateTime @default(now()) @db.Timetz(6)
+  updatedAt     DateTime @default(now()) @db.Timetz(6)
   walletAddress String
   isPrimary     Boolean
   orders        orders[]
