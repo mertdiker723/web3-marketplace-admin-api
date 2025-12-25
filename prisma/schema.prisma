@@ -46,25 +46,26 @@ model neighborhoods {
 }
 
 model users {
-  id             String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  firstName      String        @db.VarChar(70)
-  lastName       String        @db.VarChar(100)
-  email          String        @db.VarChar(70)
-  phone          String        @db.VarChar(25)
+  id             String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  firstName      String         @db.VarChar(70)
+  lastName       String         @db.VarChar(100)
+  email          String         @unique(map: "users_email_unique") @db.VarChar(70)
+  phone          String?        @db.VarChar(25)
   openAddress    String?
-  provinceId     Int
-  districtId     Int
-  neighborhoodId Int
-  createdAt      DateTime?     @default(now()) @db.Timetz(6)
-  updatedAt      DateTime?     @default(now()) @db.Timetz(6)
-  userType       Int           @default(1)
+  provinceId     Int?
+  districtId     Int?
+  neighborhoodId Int?
+  createdAt      DateTime       @default(now()) @db.Time(6)
+  updatedAt      DateTime       @default(now()) @db.Time(6)
+  userType       Int            @default(1)
+  password       String         @db.VarChar(255)
   orders         orders[]
   products       products[]
   userWallets    userWallets[]
-  districts      districts     @relation(fields: [districtId], references: [id], onUpdate: NoAction, map: "user_district_id_fkey")
-  neighborhoods  neighborhoods @relation(fields: [neighborhoodId], references: [id], onUpdate: NoAction, map: "user_neighborhood_id_fkey")
-  provinces      provinces     @relation(fields: [provinceId], references: [id], onUpdate: NoAction, map: "user_province_id_fkey")
-  userTypes      userTypes     @relation(fields: [userType], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_user-type_id_fkey")
+  districts      districts?     @relation(fields: [districtId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "user_district_id_fkey")
+  neighborhoods  neighborhoods? @relation(fields: [neighborhoodId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "user_neighborhood_id_fkey")
+  provinces      provinces?     @relation(fields: [provinceId], references: [id], onDelete: Restrict, onUpdate: NoAction, map: "user_province_id_fkey")
+  userTypes      userTypes      @relation(fields: [userType], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "user_user-type_id_fkey")
 }
 
 model products {
