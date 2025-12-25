@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 
 import { type IUser } from '../../models/user/user.model';
 
-const TOKEN_EXPIRATION_TIME = '1s';
+const TOKEN_EXPIRATION_TIME = '1h';
 
 export const verifyToken = (token: string) => {
   return jwt.verify(token, process.env.JWT_SECRET as string);

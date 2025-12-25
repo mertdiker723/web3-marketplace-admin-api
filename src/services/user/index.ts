@@ -23,6 +23,27 @@ export class UserService {
     this.#userRepository = new UserRepository();
   }
 
+  getUser = async (data: Partial<IUser>) => {
+    const { id } = data || {};
+    if (!id) {
+      throw new BadRequestError('User ID is required');
+    }
+
+    const user = await this.#userRepository.findUserById(id);
+
+    if (!user) {
+      throw new BadRequestError('User not found');
+    }
+
+    const { password: _, ...userWithoutPassword } = user;
+
+    return {
+      data: userWithoutPassword,
+      message: 'User fetched successfully',
+      success: true,
+    };
+  };
+
   registerUser = async (data: Partial<IUser>) => {
     const { firstName, lastName, email, password, rePassword } = data || {};
     if (!firstName || !lastName || !email || !password || !rePassword) {
@@ -33,7 +54,6 @@ export class UserService {
       throw new BadRequestError('Invalid email');
     }
 
-    // Check if user already exists
     const userByEmail = await this.#userRepository.findUserByEmail(email);
 
     if (userByEmail) {
@@ -79,7 +99,6 @@ export class UserService {
       throw new BadRequestError('Invalid email');
     }
 
-    // Check if user exists
     const user = await this.#userRepository.findUserByEmail(email);
 
     if (!user) {

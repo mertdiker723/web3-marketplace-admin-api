@@ -5,6 +5,13 @@ import { type IUser } from '../../models/user/user.model';
 import { BadRequestError } from '../../utils/errors/HttpError';
 
 export class UserRepository {
+  async findUserById(id: string) {
+    const user = await prisma.users.findUnique({
+      where: { id },
+    });
+    return user;
+  }
+
   async findUserByEmail(email: string) {
     const user = await prisma.users.findUnique({
       where: { email },
