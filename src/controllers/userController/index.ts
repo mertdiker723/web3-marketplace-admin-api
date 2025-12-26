@@ -1,6 +1,11 @@
 import type { Request, Response } from 'express';
 
 import { UserService } from '../../services/user';
+import { type IUser } from '../../models/user/user.model';
+
+interface AuthenticatedRequest extends Request {
+  user?: Partial<IUser>;
+}
 
 export class UserController {
   #userService: UserService;
@@ -11,9 +16,10 @@ export class UserController {
     this.registerUser = this.registerUser.bind(this);
   }
 
-  getUser = async (req: Request, res: Response) => {
+  getUser = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { data, message, success } = await this.#userService.getUser(req.body);
+      const { data, message, success } = await this.#userService.getUser(req.user as Partial<IUser>);
+
       res.status(200).json({ data, message, success });
     } catch (error) {
       res.status(500).json({ data: null, message: (error as Error).message, success: false });

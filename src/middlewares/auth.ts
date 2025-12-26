@@ -20,7 +20,7 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
   try {
     const { id, email, userType } = verifyToken(token) as Partial<IUser>;
 
-    req.body = { id, email, userType };
+    req.user = { id, email, userType };
     return next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {

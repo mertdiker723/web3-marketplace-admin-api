@@ -17,8 +17,8 @@ router.post('/users/login', userController.loginUser);
 router.get('/users/me', authMiddleware, userController.getUser);
 
 // Location Routes
-router.get('/provinces', locationController.getAllProvinces);
-router.get('/districts/:provinceId', locationController.getDistrictsByProvinceId);
-router.get('/neighborhoods/:districtId', locationController.getNeighborhoodsByDistrictId);
+router.get('/provinces', authMiddleware, locationController.getAllProvinces);
+router.get('/districts/:provinceId', authMiddleware, locationController.getDistrictsByProvinceId);
+router.get('/neighborhoods/:districtId', authMiddleware, locationController.getNeighborhoodsByDistrictId);
 
 export default router;

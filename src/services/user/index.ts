@@ -25,11 +25,7 @@ export class UserService {
 
   getUser = async (data: Partial<IUser>) => {
     const { id } = data || {};
-    if (!id) {
-      throw new BadRequestError('User ID is required');
-    }
-
-    const user = await this.#userRepository.findUserById(id);
+    const user = await this.#userRepository.findUserById(id as string);
 
     if (!user) {
       throw new BadRequestError('User not found');
