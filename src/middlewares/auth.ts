@@ -9,9 +9,9 @@ interface AuthenticatedRequest extends Request {
 }
 
 export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization || '';
+  const authHeader = req.headers.authentication || '';
 
-  const [scheme, token] = authHeader.split(' ');
+  const [scheme, token] = (authHeader as string).split(' ');
 
   if (scheme !== 'Bearer' || !token) {
     return res.status(401).json({ message: 'No token provided', success: false });
@@ -23,12 +23,11 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
     req.user = { id, email, userType };
     return next();
   } catch (error) {
-    if (error instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({ message: 'Token expired', success: false });
-    }
-
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(401).json({ message: 'Invalid token', success: false });
+      return res.status(401).json({
+        message: error instanceof jwt.TokenExpiredError ? 'Token expired' : 'Invalid token',
+        success: false,
+      });
     }
 
     return res.status(500).json({ message: (error as Error).message, success: false });

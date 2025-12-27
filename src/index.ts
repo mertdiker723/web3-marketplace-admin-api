@@ -9,7 +9,7 @@ dotenv.config();
 // Routers
 import router from './routers';
 
-const corsURL = 'http://localhost:5000'; // --> will be handled
+const corsURL = 'http://localhost:5173'; // --> will be handled
 
 (() => {
   try {

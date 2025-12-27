@@ -111,8 +111,13 @@ export class UserService {
 
     const token = tokenCreation(payload);
 
+    const { password: _, ...userWithoutPassword } = user;
+
     return {
-      data: token,
+      data: {
+        user: userWithoutPassword,
+        token,
+      },
       message: 'Login successful',
       success: true,
     };
