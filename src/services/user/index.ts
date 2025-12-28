@@ -1,4 +1,5 @@
 import bcrypt from 'bcryptjs';
+import { ZodError } from 'zod';
 
 // Models
 import { type IUser } from '../../models/user/user.model';
@@ -14,7 +15,10 @@ import { UserRepository } from '../../repositories/user';
 
 // Utils
 import { tokenCreation } from '../../utils/jwt/tokenCreation';
-import { validateEmail } from '../../utils/helpers';
+import { validateEmail, handleValidationZodError } from '../../utils/helpers';
+
+// Validations
+import { loginUserSchema } from '../../validations/user/user.validation';
 
 export class UserService {
   #userRepository: UserRepository;
@@ -41,8 +45,8 @@ export class UserService {
   };
 
   registerUser = async (data: Partial<IUser>) => {
-    const { firstName, lastName, email, password, rePassword } = data || {};
-    if (!firstName || !lastName || !email || !password || !rePassword) {
+    const { firstName, lastName, email, password, confirmPassword } = data || {};
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
       throw new BadRequestError('All fields are required');
     }
 
@@ -56,8 +60,8 @@ export class UserService {
       throw new BadRequestError('User already exists');
     }
 
-    if (password !== rePassword) {
-      throw new BadRequestError('Password and rePassword do not match');
+    if (password !== confirmPassword) {
+      throw new BadRequestError('Password and confirmPassword do not match');
     }
 
     if (password.length < 4 || password.length > 8) {
@@ -78,48 +82,56 @@ export class UserService {
 
     const { password: _, ...userWithoutPassword } = user;
 
-    return {
-      data: userWithoutPassword,
-      message: 'User created successfully',
-      success: true,
-    };
-  };
-
-  loginUser = async (data: Partial<IUser>) => {
-    const { email, password } = data || {};
-    if (!email || !password) {
-      throw new BadRequestError('All fields are required');
-    }
-
-    if (!validateEmail(email)) {
-      throw new BadRequestError('Invalid email');
-    }
-
-    const user = await this.#userRepository.findUserByEmail(email);
-
-    if (!user) {
-      throw new BadRequestError('User not found');
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      throw new BadRequestError('Invalid password');
-    }
-
     const payload = { id: user.id, email: user.email, userType: user.userType };
 
     const token = tokenCreation(payload);
-
-    const { password: _, ...userWithoutPassword } = user;
 
     return {
       data: {
         user: userWithoutPassword,
         token,
       },
-      message: 'Login successful',
+      message: 'User created successfully',
       success: true,
     };
+  };
+
+  loginUser = async (data: Partial<IUser>) => {
+    try {
+      const validatedData = loginUserSchema.parse(data);
+      const { email, password } = validatedData || {};
+
+      const user = await this.#userRepository.findUserByEmail(email);
+
+      if (!user) {
+        throw new BadRequestError('User not found');
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (!isMatch) {
+        throw new BadRequestError('Invalid password');
+      }
+
+      const payload = { id: user.id, email: user.email, userType: user.userType };
+
+      const token = tokenCreation(payload);
+
+      const { password: _, ...userWithoutPassword } = user;
+
+      return {
+        data: {
+          user: userWithoutPassword,
+          token,
+        },
+        message: 'Login successful',
+        success: true,
+      };
+    } catch (error) {
+      if (error instanceof ZodError) {
+        throw handleValidationZodError(error);
+      }
+      throw error;
+    }
   };
 }

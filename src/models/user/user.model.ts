@@ -4,7 +4,7 @@ export interface IUser {
   lastName: string;
   email: string;
   password: string;
-  rePassword: string;
+  confirmPassword: string;
   phone: string;
   openAddress?: string;
   provinceId: number;
