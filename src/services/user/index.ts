@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import { ZodError } from 'zod';
 
 // Models
 import { type IUser } from '../../models/user/user.model';
@@ -15,10 +14,10 @@ import { UserRepository } from '../../repositories/user';
 
 // Utils
 import { tokenCreation } from '../../utils/jwt/tokenCreation';
-import { validateEmail, handleValidationZodError } from '../../utils/helpers';
+import { handleValidationZodError } from '../../utils/helpers';
 
 // Validations
-import { loginUserSchema } from '../../validations/user/user.validation';
+import { getUserSchema, loginUserSchema, registerUserSchema } from '../../validations/user/user.validation';
 
 export class UserService {
   #userRepository: UserRepository;
@@ -28,8 +27,15 @@ export class UserService {
   }
 
   getUser = async (data: Partial<IUser>) => {
-    const { id } = data || {};
-    const user = await this.#userRepository.findUserById(id as string);
+    const validatedData = getUserSchema.safeParse(data);
+
+    if (!validatedData.success) {
+      throw new BadRequestError(handleValidationZodError(validatedData.error));
+    }
+
+    const { id } = validatedData.data || {};
+
+    const user = await this.#userRepository.findUserById(id);
 
     if (!user) {
       throw new BadRequestError('User not found');
@@ -45,27 +51,17 @@ export class UserService {
   };
 
   registerUser = async (data: Partial<IUser>) => {
-    const { firstName, lastName, email, password, confirmPassword } = data || {};
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      throw new BadRequestError('All fields are required');
-    }
+    const validatedData = registerUserSchema.safeParse(data);
 
-    if (!validateEmail(email)) {
-      throw new BadRequestError('Invalid email');
+    if (!validatedData.success) {
+      throw new BadRequestError(handleValidationZodError(validatedData.error));
     }
+    const { firstName, lastName, email, password } = validatedData.data || {};
 
     const userByEmail = await this.#userRepository.findUserByEmail(email);
 
     if (userByEmail) {
       throw new BadRequestError('User already exists');
-    }
-
-    if (password !== confirmPassword) {
-      throw new BadRequestError('Password and confirmPassword do not match');
-    }
-
-    if (password.length < 4 || password.length > 8) {
-      throw new BadRequestError('Password must be between 4 and 8 characters');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -97,41 +93,39 @@ export class UserService {
   };
 
   loginUser = async (data: Partial<IUser>) => {
-    try {
-      const validatedData = loginUserSchema.parse(data);
-      const { email, password } = validatedData || {};
+    const validatedData = loginUserSchema.safeParse(data);
 
-      const user = await this.#userRepository.findUserByEmail(email);
-
-      if (!user) {
-        throw new BadRequestError('User not found');
-      }
-
-      const isMatch = await bcrypt.compare(password, user.password);
-
-      if (!isMatch) {
-        throw new BadRequestError('Invalid password');
-      }
-
-      const payload = { id: user.id, email: user.email, userType: user.userType };
-
-      const token = tokenCreation(payload);
-
-      const { password: _, ...userWithoutPassword } = user;
-
-      return {
-        data: {
-          user: userWithoutPassword,
-          token,
-        },
-        message: 'Login successful',
-        success: true,
-      };
-    } catch (error) {
-      if (error instanceof ZodError) {
-        throw handleValidationZodError(error);
-      }
-      throw error;
+    if (!validatedData.success) {
+      throw new BadRequestError(handleValidationZodError(validatedData.error));
     }
+
+    const { email, password } = validatedData.data || {};
+
+    const user = await this.#userRepository.findUserByEmail(email);
+
+    if (!user) {
+      throw new BadRequestError('User not found');
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      throw new BadRequestError('Invalid password');
+    }
+
+    const payload = { id: user.id, email: user.email, userType: user.userType };
+
+    const token = tokenCreation(payload);
+
+    const { password: _, ...userWithoutPassword } = user;
+
+    return {
+      data: {
+        user: userWithoutPassword,
+        token,
+      },
+      message: 'Login successful',
+      success: true,
+    };
   };
 }
