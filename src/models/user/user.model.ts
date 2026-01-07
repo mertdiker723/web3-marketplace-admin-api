@@ -1,3 +1,10 @@
+import { type IDistrict, type INeighborhood, type IProvince } from '../location/location.model';
+
+export interface IUserType {
+  id: number;
+  name: string;
+}
+
 export interface IUser {
   id: string;
   firstName: string;
@@ -13,4 +20,14 @@ export interface IUser {
   createdAt?: Date;
   updatedAt?: Date;
   userType: number;
+  userTypes: IUserType;
+  provinces?: IProvince;
+  districts?: IDistrict;
+  neighborhoods?: INeighborhood;
+}
+
+export interface IUserQueryParams {
+  page?: number;
+  limit?: number;
+  search?: string;
 }

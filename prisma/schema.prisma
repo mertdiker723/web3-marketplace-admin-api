@@ -55,8 +55,8 @@ model users {
   provinceId     Int?
   districtId     Int?
   neighborhoodId Int?
-  createdAt      DateTime       @default(now()) @db.Time(6)
-  updatedAt      DateTime       @default(now()) @db.Time(6)
+  createdAt      DateTime       @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime       @updatedAt @db.Timestamp(6)
   userType       Int            @default(1)
   password       String         @db.VarChar(255)
   orders         orders[]
@@ -80,8 +80,8 @@ model products {
   tokenAddress   String?
   stock          Int        @default(0)
   isActive       Boolean
-  createdAt      DateTime   @db.Timetz(6)
-  updatedAt      DateTime   @db.Timetz(6)
+  createdAt      DateTime   @default(now()) @db.Timestamp(6)
+  updatedAt      DateTime   @updatedAt @db.Timestamp(6)
   userId         String     @db.Uuid
   orders         orders[]
   brands         brands     @relation(fields: [brandId], references: [id], onUpdate: NoAction, map: "product_brand_id_fkey")
@@ -95,8 +95,8 @@ model orders {
   unitPriceWei  String
   totalWei      String
   status        Int
-  createdAt     DateTime    @db.Timetz(6)
-  updatedAt     DateTime    @db.Timetz(6)
+  createdAt     DateTime    @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime    @updatedAt @db.Timestamp(6)
   userId        String      @db.Uuid
   userWalletsId String      @db.Uuid
   productId     String      @db.Uuid
@@ -113,8 +113,8 @@ model status {
 model userWallets {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId        String   @db.Uuid
-  createdAt     DateTime @default(now()) @db.Timetz(6)
-  updatedAt     DateTime @default(now()) @db.Timetz(6)
+  createdAt     DateTime @default(now()) @db.Timestamp(6)
+  updatedAt     DateTime @updatedAt @db.Timestamp(6)
   walletAddress String
   isPrimary     Boolean
   orders        orders[]

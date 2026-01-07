@@ -26,6 +26,44 @@ export class UserController {
     }
   };
 
+  getSelectedUser = async (req: Request, res: Response) => {
+    try {
+      const { data, message, success } = await this.#userService.getUser({ id: req.params.id });
+
+      res.status(200).json({ data, message, success });
+    } catch (error) {
+      res.status(500).json({ data: null, message: (error as Error).message, success: false });
+    }
+  };
+
+  getAllUsers = async (req: Request, res: Response) => {
+    try {
+      const { data, pagination, message, success } = await this.#userService.getAllUsers(req.query);
+
+      res.status(200).json({ data, pagination, message, success });
+    } catch (error) {
+      res.status(500).json({ data: null, message: (error as Error).message, success: false });
+    }
+  };
+
+  updateUser = async (req: Request, res: Response) => {
+    try {
+      const { data, message, success } = await this.#userService.updateUser(req.params.id as string, req.body);
+      res.status(200).json({ data, message, success });
+    } catch (error) {
+      res.status(500).json({ data: null, message: (error as Error).message, success: false });
+    }
+  };
+
+  deleteUser = async (req: Request, res: Response) => {
+    try {
+      const { data, message, success } = await this.#userService.deleteUser(req.params.id as string);
+      res.status(200).json({ data, message, success });
+    } catch (error) {
+      res.status(500).json({ data: null, message: (error as Error).message, success: false });
+    }
+  };
+
   registerUser = async (req: Request, res: Response) => {
     try {
       const { data, message, success } = await this.#userService.registerUser(req.body);

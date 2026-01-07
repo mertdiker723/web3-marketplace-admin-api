@@ -1,13 +1,13 @@
 import bcrypt from 'bcryptjs';
 
 // Models
-import { type IUser } from '../../models/user/user.model';
+import { type IUser, type IUserQueryParams } from '../../models/user/user.model';
 
 // Enums
 import { UserType } from '../../enums/user/user.enum';
 
 // Utils
-import { BadRequestError } from '../../utils/errors/HttpError';
+import { BadRequestError, ForbiddenError, NotFoundError } from '../../utils/errors/HttpError';
 
 // Repositories
 import { UserRepository } from '../../repositories/user';
@@ -41,11 +41,62 @@ export class UserService {
       throw new BadRequestError('User not found');
     }
 
-    const { password: _, ...userWithoutPassword } = user;
+    return {
+      data: user,
+      message: 'User fetched successfully',
+      success: true,
+    };
+  };
+
+  getAllUsers = async (params?: IUserQueryParams) => {
+    const page = params?.page || 1;
+    const limit = params?.limit || 5;
+    const search = params?.search || '';
+
+    const { users, pagination } = await this.#userRepository.getAllUsers({ page, limit, search });
+
+    if (!users || users.length === 0) {
+      throw new NotFoundError('No users found');
+    }
 
     return {
-      data: userWithoutPassword,
-      message: 'User fetched successfully',
+      data: users,
+      pagination,
+      message: 'Users fetched successfully',
+      success: true,
+    };
+  };
+
+  updateUser = async (id: string, data: Partial<IUser>) => {
+    if (!id) {
+      throw new BadRequestError('User ID is required');
+    }
+
+    const { data: updateData } = await this.#userRepository.updateUser(id, data);
+
+    if (!updateData) {
+      throw new NotFoundError('User not found');
+    }
+    return {
+      data: updateData,
+      message: 'User updated successfully',
+      success: true,
+    };
+  };
+
+  deleteUser = async (id: string) => {
+    if (!id) {
+      throw new BadRequestError('User ID is required');
+    }
+    const { data } = await this.#userRepository.deleteUser(id);
+
+    if (!data) {
+      throw new NotFoundError('User not found');
+    }
+
+    return {
+      data,
+      message: 'User deleted successfully',
       success: true,
     };
   };
@@ -105,6 +156,10 @@ export class UserService {
 
     if (!user) {
       throw new BadRequestError('User not found');
+    }
+
+    if (![UserType.ADMIN, UserType.SUPER_ADMIN, UserType.GUEST_ADMIN].includes(user.userType)) {
+      throw new ForbiddenError('You are not authorized to login for non admin users');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
