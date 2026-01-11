@@ -40,12 +40,7 @@ export const authMiddleware = (req: AuthenticatedRequest, res: Response, next: N
 };
 
 export const adminAuthorizationMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  const { data } = await userService.getUser({ id: req.user?.id as string });
-  const { userType } = data || {};
-
-  if (userType !== req?.user?.userType) {
-    return res.status(403).json({ message: 'User type mismatch', success: false });
-  }
+  const { userType } = req?.user || {};
 
   if (![UserType.ADMIN, UserType.SUPER_ADMIN, UserType.GUEST_ADMIN].includes(userType as number)) {
     return res.status(403).json({ message: 'Admin access required', success: false });

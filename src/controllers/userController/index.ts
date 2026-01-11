@@ -18,17 +18,8 @@ export class UserController {
 
   getUser = async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { data, message, success } = await this.#userService.getUser(req.user as Partial<IUser>);
-
-      res.status(200).json({ data, message, success });
-    } catch (error) {
-      res.status(500).json({ data: null, message: (error as Error).message, success: false });
-    }
-  };
-
-  getSelectedUser = async (req: Request, res: Response) => {
-    try {
-      const { data, message, success } = await this.#userService.getUser({ id: req.params.id });
+      const userQuery = req.params.id ? { id: req.params.id } : (req.user as Partial<IUser>);
+      const { data, message, success } = await this.#userService.getUser(userQuery);
 
       res.status(200).json({ data, message, success });
     } catch (error) {
