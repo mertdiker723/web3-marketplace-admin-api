@@ -46,9 +46,18 @@ export class UserController {
     }
   };
 
-  updateUser = async (req: Request, res: Response) => {
+  updateUserInfo = async (req: Request, res: Response) => {
     try {
       const { data, message, success } = await this.#userService.updateUser(req.params.id as string, req.body);
+      res.status(200).json({ data, message, success });
+    } catch (error) {
+      res.status(500).json({ data: null, message: (error as Error).message, success: false });
+    }
+  };
+
+  updateUserProfile = async (req: Request, res: Response) => {
+    try {
+      const { data, message, success } = await this.#userService.updateUserProfile(req.params.id as string, req.body);
       res.status(200).json({ data, message, success });
     } catch (error) {
       res.status(500).json({ data: null, message: (error as Error).message, success: false });

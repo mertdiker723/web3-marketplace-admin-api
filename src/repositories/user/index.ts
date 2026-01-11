@@ -118,6 +118,26 @@ export class UserRepository {
     return { data: updatedUser };
   }
 
+  async updateUserProfile(id: string, data: Partial<IUser>) {
+    const updatedUser = await prisma.users.update({
+      where: { id },
+      data: {
+        firstName: data.firstName as string,
+        lastName: data.lastName as string,
+        phone: data.phone as string,
+        provinceId: data.provinceId as number,
+        districtId: data.districtId as number,
+        neighborhoodId: data.neighborhoodId as number,
+        openAddress: data.openAddress as string,
+        password: data.password as string,
+      },
+      omit: {
+        password: true,
+      },
+    });
+    return { data: updatedUser };
+  }
+
   async deleteUser(id: string) {
     const data = await prisma.users.delete({
       where: { id },
@@ -140,6 +160,9 @@ export class UserRepository {
           password: password as string,
           userType: userType as number,
         },
+        omit: {
+          password: true,
+        }
       });
       return user;
     } catch (error) {

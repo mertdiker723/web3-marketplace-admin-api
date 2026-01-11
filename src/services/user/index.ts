@@ -17,7 +17,7 @@ import { tokenCreation } from '../../utils/jwt/tokenCreation';
 import { handleValidationZodError } from '../../utils/helpers';
 
 // Validations
-import { getUserSchema, loginUserSchema, registerUserSchema } from '../../validations/user/user.validation';
+import { getUserSchema, loginUserSchema, registerUserSchema, updateUserProfileSchema } from '../../validations/user/user.validation';
 
 export class UserService {
   #userRepository: UserRepository;
@@ -84,6 +84,30 @@ export class UserService {
     };
   };
 
+  updateUserProfile = async (id: string, data: Partial<IUser>) => {
+    const validatedData = updateUserProfileSchema.safeParse(data);
+
+    if (!validatedData.success) {
+      throw new BadRequestError(handleValidationZodError(validatedData.error));
+    }
+
+    const updatedData: Partial<IUser> = { ...data };
+
+    if (data.password) {
+      updatedData.password = await bcrypt.hash(data.password as string, 10);
+    }
+
+    if (!id) {
+      throw new BadRequestError('User ID is required');
+    }
+    const { data: updateData } = await this.#userRepository.updateUserProfile(id, updatedData);
+    return {
+      data: updateData,
+      message: 'User profile updated successfully',
+      success: true,
+    };
+  };
+
   deleteUser = async (id: string) => {
     if (!id) {
       throw new BadRequestError('User ID is required');
@@ -127,15 +151,13 @@ export class UserService {
 
     const user = await this.#userRepository.registerUser(userData);
 
-    const { password: _, ...userWithoutPassword } = user;
-
     const payload = { id: user.id, email: user.email, userType: user.userType };
 
     const token = tokenCreation(payload);
 
     return {
       data: {
-        user: userWithoutPassword,
+        user,
         token,
       },
       message: 'User created successfully',

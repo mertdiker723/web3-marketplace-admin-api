@@ -16,9 +16,10 @@ router.post('/users/register', userController.registerUser);
 router.post('/users/login', userController.loginUser);
 router.get('/users/me', authMiddleware, adminAuthorizationMiddleware, userController.getUser);
 router.get('/users', authMiddleware, superAdminAuthorizationMiddleware, userController.getAllUsers);
-router.delete('/users/:id', authMiddleware, superAdminAuthorizationMiddleware, userController.deleteUser);
 router.get('/users/:id', authMiddleware, superAdminAuthorizationMiddleware, userController.getSelectedUser);
-router.put('/users/:id', authMiddleware, superAdminAuthorizationMiddleware, userController.updateUser);
+router.delete('/users/:id', authMiddleware, superAdminAuthorizationMiddleware, userController.deleteUser);
+router.put('/users/:id', authMiddleware, superAdminAuthorizationMiddleware, userController.updateUserInfo);
+router.put('/users/:id/profile', authMiddleware, adminAuthorizationMiddleware, userController.updateUserProfile);
 
 // Location Routes
 router.get('/provinces', authMiddleware, adminAuthorizationMiddleware, locationController.getAllProvinces);

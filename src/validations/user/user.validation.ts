@@ -37,6 +37,17 @@ export const getUserSchema = z.object({
   id: z.preprocess(preprocessString, guidSchema),
 });
 
+export const updateUserProfileSchema = z
+  .object({
+    firstName: z.preprocess(preprocessString, textSchema('First name')),
+    lastName: z.preprocess(preprocessString, textSchema('Last name')),
+    password: z.preprocess(preprocessString, z.string().trim().min(6, 'Password must be at least 6 characters')).optional(),
+    confirmPassword: z.preprocess(preprocessString, z.string().trim().min(6, 'Confirm password must be at least 6 characters')).optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 // Types
 export type LoginUserInput = z.infer<typeof loginUserSchema>;
 export type RegisterUserInput = z.infer<typeof registerUserSchema>;

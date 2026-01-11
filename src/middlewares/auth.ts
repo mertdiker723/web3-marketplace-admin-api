@@ -43,6 +43,10 @@ export const adminAuthorizationMiddleware = async (req: AuthenticatedRequest, re
   const { data } = await userService.getUser({ id: req.user?.id as string });
   const { userType } = data || {};
 
+  if (userType !== req?.user?.userType) {
+    return res.status(403).json({ message: 'User type mismatch', success: false });
+  }
+
   if (![UserType.ADMIN, UserType.SUPER_ADMIN, UserType.GUEST_ADMIN].includes(userType as number)) {
     return res.status(403).json({ message: 'Admin access required', success: false });
   }
@@ -53,6 +57,10 @@ export const adminAuthorizationMiddleware = async (req: AuthenticatedRequest, re
 export const superAdminAuthorizationMiddleware = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   const { data } = await userService.getUser({ id: req.user?.id as string });
   const { userType } = data || {};
+
+  if (userType !== req?.user?.userType) {
+    return res.status(403).json({ message: 'User type mismatch', success: false });
+  }
 
   if (userType !== UserType.SUPER_ADMIN) {
     return res.status(403).json({ message: 'Super admin access required', success: false });
