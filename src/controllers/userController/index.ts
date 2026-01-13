@@ -12,8 +12,6 @@ export class UserController {
 
   constructor() {
     this.#userService = new UserService();
-
-    this.registerUser = this.registerUser.bind(this);
   }
 
   getUser = async (req: AuthenticatedRequest, res: Response) => {
