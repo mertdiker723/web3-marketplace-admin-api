@@ -1,11 +1,11 @@
 import prisma from '../../config/prisma';
 import { Prisma } from '@prisma/client';
 
-import { type IBrand, type IBrandQueryParams } from '../../models/brand/brand.model';
+import { type ICategory, type ICategoryQueryParams } from '../../models/category/category.model';
 import { BadRequestError } from '../../utils/errors/HttpError';
 
-export class BrandRepository {
-  async getAllBrands(params?: IBrandQueryParams) {
+export class CategoryRepository {
+  async getAllCategories(params?: ICategoryQueryParams) {
     const { page = 1, limit = 10, search = '' } = params || {};
 
     const pageNumber = Number(page);
@@ -18,9 +18,9 @@ export class BrandRepository {
         }
       : {};
 
-    const totalCount = await prisma.brands.count({ where });
+    const totalCount = await prisma.categories.count({ where });
 
-    const brands = await prisma.brands.findMany({
+    const categories = await prisma.categories.findMany({
       where,
       skip,
       take: limitNumber,
@@ -34,7 +34,7 @@ export class BrandRepository {
     });
 
     return {
-      brands,
+      categories,
       pagination: {
         total: totalCount,
         page: pageNumber,
@@ -44,58 +44,58 @@ export class BrandRepository {
     };
   }
 
-  async getBrandById(id: string) {
-    const brand = await prisma.brands.findUnique({
+  async getCategoryById(id: string) {
+    const category = await prisma.categories.findUnique({
       where: { id },
     });
-    return brand;
+    return category;
   }
 
-  async createBrand(data: Partial<IBrand>) {
+  async createCategory(data: Partial<ICategory>) {
     try {
-      const brand = await prisma.brands.create({
+      const category = await prisma.categories.create({
         data: {
           name: data.name as string,
         },
       });
-      return brand;
+      return category;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new BadRequestError('This brand name already exists');
+          throw new BadRequestError('This category name already exists');
         }
       }
       throw error;
     }
   }
 
-  async updateBrand(id: string, data: Partial<IBrand>) {
+  async updateCategory(id: string, data: Partial<ICategory>) {
     try {
-      const brand = await prisma.brands.update({
+      const category = await prisma.categories.update({
         where: { id },
         data: {
           name: data.name as string,
         },
       });
-      return brand;
+      return category;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
-          throw new BadRequestError('This brand name already exists');
+          throw new BadRequestError('This category name already exists');
         }
       }
       throw error;
     }
   }
 
-  async deleteBrand(id: string) {
-    const brand = await prisma.brands.delete({
+  async deleteCategory(id: string) {
+    const category = await prisma.categories.delete({
       where: { id },
       select: {
         id: true,
         name: true,
       },
     });
-    return brand;
+    return category;
   }
 }

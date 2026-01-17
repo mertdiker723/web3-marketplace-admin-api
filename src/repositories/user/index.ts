@@ -64,7 +64,7 @@ export class UserRepository {
       where,
       skip,
       take: limitNumber,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { updatedAt: 'desc' },
       select: {
         id: true,
         firstName: true,
